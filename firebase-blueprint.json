@@ -1,0 +1,167 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user's Ghanaian academic profile and role-specific onboarding details.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID of the profile owner." },
+        "fullName": { "type": "string", "description": "Display full name." },
+        "email": { "type": "string", "description": "User email address (private to owner)." },
+        "role": { "type": "string", "enum": ["STUDENT", "TEACHER", "PRIVATE_TUTOR"], "description": "Primary academic role." },
+        "educationLevel": { "type": "string", "enum": ["", "SHS", "UNIVERSITY"], "description": "Educational level for students." },
+        "institutionId": { "type": "string", "description": "Selected Ghanaian SHS or University identifier." },
+        "institutionName": { "type": "string", "description": "Selected Ghanaian SHS or University display name." },
+        "formOrLevel": { "type": "string", "description": "SHS Form (SHS 1-3) or University Level (100-400)." },
+        "learningAreaOrProgramme": { "type": "string", "description": "SHS Learning Area or University Programme." },
+        "semester": { "type": "string", "description": "University semester." },
+        "academicYear": { "type": "string", "description": "Academic year e.g. 2026/2027." },
+        "enrolledUnitIds": { "type": "array", "description": "List of enrolled subject or course unit IDs (max 20)." },
+        "teachingSpecialty": { "type": "string", "description": "Teacher department or subject specialty." },
+        "staffVerificationId": { "type": "string", "description": "Teacher NTC/staff verification reference." },
+        "tutorBio": { "type": "string", "description": "Private tutor biography." },
+        "tutorCredentials": { "type": "string", "description": "Private tutor academic credentials." },
+        "tutorHourlyRateGhs": { "type": "number", "description": "Private tutor hourly rate in GHS." },
+        "tutorMode": { "type": "string", "description": "Online, In-Person, or Hybrid." },
+        "onboardingCompleted": { "type": "boolean", "description": "Whether onboarding wizard is complete." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp." }
+      },
+      "required": ["userId", "fullName", "role", "onboardingCompleted", "createdAt", "updatedAt"]
+    },
+    "QuizAttempt": {
+      "title": "QuizAttempt",
+      "description": "Student MCQ practice quiz attempt and instant grading result.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "unitId": { "type": "string" },
+        "unitTitle": { "type": "string" },
+        "assessmentTitle": { "type": "string" },
+        "score": { "type": "integer" },
+        "correctCount": { "type": "integer" },
+        "totalQuestions": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "unitId", "unitTitle", "assessmentTitle", "score", "correctCount", "totalQuestions", "createdAt"]
+    },
+    "LessonPlan": {
+      "title": "LessonPlan",
+      "description": "AI Teacher Copilot generated NaCCA or University lesson notes and grading rubric.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "unitId": { "type": "string" },
+        "unitTitle": { "type": "string" },
+        "topic": { "type": "string" },
+        "gradeOrLevel": { "type": "string" },
+        "lessonNotes": { "type": "string" },
+        "assessmentQuestions": { "type": "string" },
+        "gradingRubric": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "unitId", "unitTitle", "topic", "gradeOrLevel", "lessonNotes", "assessmentQuestions", "gradingRubric", "createdAt"]
+    },
+    "TutorBooking": {
+      "title": "TutorBooking",
+      "description": "Private tutor session booking with Paystack or Mobile Money status.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "tutorId": { "type": "string" },
+        "tutorName": { "type": "string" },
+        "subjectTitle": { "type": "string" },
+        "scheduledDate": { "type": "string" },
+        "scheduledTime": { "type": "string" },
+        "amountGhs": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["MTN MoMo", "Telecel Cash", "Paystack Card"] },
+        "paymentStatus": { "type": "string", "enum": ["CONFIRMED", "PENDING", "COMPLETED"] },
+        "meetingMode": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "tutorId", "tutorName", "subjectTitle", "scheduledDate", "scheduledTime", "amountGhs", "paymentMethod", "paymentStatus", "meetingMode", "createdAt"]
+    },
+    "LearningResource": {
+      "title": "LearningResource",
+      "description": "Published lecture notes, past questions, textbooks, or lesson plans.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "unitId": { "type": "string" },
+        "unitCode": { "type": "string" },
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "resourceType": { "type": "string", "enum": ["TEXTBOOK", "LECTURE_NOTE", "VIDEO", "PAST_QUESTION", "LESSON_PLAN"] },
+        "isTeacherVerified": { "type": "boolean" },
+        "isPublished": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "authorName", "unitId", "unitCode", "title", "summary", "resourceType", "isTeacherVerified", "isPublished", "createdAt"]
+    },
+    "LiveClass": {
+      "title": "LiveClass",
+      "description": "Teacher or tutor hosted live academic session.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "hostName": { "type": "string" },
+        "unitId": { "type": "string" },
+        "unitCode": { "type": "string" },
+        "title": { "type": "string" },
+        "scheduledAtLabel": { "type": "string" },
+        "meetingLink": { "type": "string" },
+        "status": { "type": "string", "enum": ["UPCOMING", "LIVE", "ENDED"] },
+        "isPublished": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "hostName", "unitId", "unitCode", "title", "scheduledAtLabel", "meetingLink", "status", "isPublished", "createdAt"]
+    },
+    "ForumPost": {
+      "title": "ForumPost",
+      "description": "Course-scoped study community discussion post.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorRole": { "type": "string" },
+        "unitId": { "type": "string" },
+        "unitCode": { "type": "string" },
+        "content": { "type": "string" },
+        "isPublished": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "authorName", "authorRole", "unitId", "unitCode", "content", "isPublished", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Owner-only academic profile and role-specific onboarding data."
+    },
+    "/users/{userId}/quiz_attempts/{attemptId}": {
+      "schema": { "$ref": "#/entities/QuizAttempt" },
+      "description": "Student MCQ quiz attempt records."
+    },
+    "/users/{userId}/lesson_plans/{planId}": {
+      "schema": { "$ref": "#/entities/LessonPlan" },
+      "description": "Teacher Copilot generated lesson notes and assessment rubrics."
+    },
+    "/users/{userId}/tutor_bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/TutorBooking" },
+      "description": "Booked private tutoring sessions and MoMo/Paystack checkout state."
+    },
+    "/resources/{resourceId}": {
+      "schema": { "$ref": "#/entities/LearningResource" },
+      "description": "Published learning resources scoped by academic unit."
+    },
+    "/live_classes/{classId}": {
+      "schema": { "$ref": "#/entities/LiveClass" },
+      "description": "Published live classes scheduled by teachers and tutors."
+    },
+    "/forum_posts/{postId}": {
+      "schema": { "$ref": "#/entities/ForumPost" },
+      "description": "Published course study community posts."
+    }
+  }
+}

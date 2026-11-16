@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Adesua</string>
+    <string name="auth_tagline">Ghanaian Academic Platform</string>
+    <string name="auth_badge_nacca">NaCCA SHS &amp; TERTIARY READY</string>
+    <string name="auth_hero_title">Your Academic Companion Across Ghana</string>
+    <string name="auth_card_heading">Sign in to Adesua</string>
+    <string name="auth_card_subtitle">Access NaCCA-aligned SHS subjects, illustrative university courses, AI tutoring, and verified private tutors.</string>
+    <string name="auth_highlight_shs_title">SHS &amp; University Academic Profiling</string>
+    <string name="auth_highlight_shs_desc">Tailored for Wesley Girls\', Prempeh College, Achimota, UG, KNUST &amp; UCC.</string>
+    <string name="auth_highlight_ai_title">AI Personalised Tutor &amp; Teacher Copilot</string>
+    <string name="auth_highlight_ai_desc">WASSCE-focused explanations, worked examples, and instant NaCCA lesson plans.</string>
+    <string name="auth_highlight_tutor_title">Verified Private Tutor Marketplace</string>
+    <string name="auth_highlight_tutor_desc">Book 1-on-1 sessions in GHS with Mobile Money &amp; Paystack checkout.</string>
+    <string name="auth_google_button">Continue with Google</string>
+    <string name="auth_signing_in">Signing in...</string>
+    <string name="illustrative_curriculum_banner">Illustrative Curriculum: Official departmental course data is pending institution verification. Sample courses below are clearly marked for preview.</string>
+</resources>

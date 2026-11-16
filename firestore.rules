@@ -1,0 +1,264 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidRole(role) {
+      return role in ['STUDENT', 'TEACHER', 'PRIVATE_TUTOR'];
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 100 &&
+             isValidRole(data.role) &&
+             data.onboardingCompleted is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 150)) &&
+             (!('educationLevel' in data) || (data.educationLevel is string && data.educationLevel in ['', 'SHS', 'UNIVERSITY'])) &&
+             (!('institutionId' in data) || (data.institutionId is string && data.institutionId.size() <= 80)) &&
+             (!('institutionName' in data) || (data.institutionName is string && data.institutionName.size() <= 120)) &&
+             (!('formOrLevel' in data) || (data.formOrLevel is string && data.formOrLevel.size() <= 40)) &&
+             (!('learningAreaOrProgramme' in data) || (data.learningAreaOrProgramme is string && data.learningAreaOrProgramme.size() <= 120)) &&
+             (!('semester' in data) || (data.semester is string && data.semester.size() <= 40)) &&
+             (!('academicYear' in data) || (data.academicYear is string && data.academicYear.size() <= 20)) &&
+             (!('enrolledUnitIds' in data) || (
+               data.enrolledUnitIds is list &&
+               data.enrolledUnitIds.size() <= 20 &&
+               (data.enrolledUnitIds.size() == 0 || data.enrolledUnitIds[0] is string)
+             )) &&
+             (!('teachingSpecialty' in data) || (data.teachingSpecialty is string && data.teachingSpecialty.size() <= 120)) &&
+             (!('staffVerificationId' in data) || (data.staffVerificationId is string && data.staffVerificationId.size() <= 80)) &&
+             (!('tutorBio' in data) || (data.tutorBio is string && data.tutorBio.size() <= 500)) &&
+             (!('tutorCredentials' in data) || (data.tutorCredentials is string && data.tutorCredentials.size() <= 200)) &&
+             (!('tutorHourlyRateGhs' in data) || ((data.tutorHourlyRateGhs is number) && data.tutorHourlyRateGhs >= 0 && data.tutorHourlyRateGhs <= 10000)) &&
+             (!('tutorMode' in data) || (data.tutorMode is string && data.tutorMode.size() <= 40));
+    }
+
+    function isValidQuizAttempt(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.unitId is string && data.unitId.size() >= 1 && data.unitId.size() <= 80 &&
+             data.unitTitle is string && data.unitTitle.size() >= 1 && data.unitTitle.size() <= 120 &&
+             data.assessmentTitle is string && data.assessmentTitle.size() >= 1 && data.assessmentTitle.size() <= 120 &&
+             data.score is int && data.score >= 0 && data.score <= 100 &&
+             data.correctCount is int && data.correctCount >= 0 && data.correctCount <= 50 &&
+             data.totalQuestions is int && data.totalQuestions >= 1 && data.totalQuestions <= 50 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidLessonPlan(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.unitId is string && data.unitId.size() >= 1 && data.unitId.size() <= 80 &&
+             data.unitTitle is string && data.unitTitle.size() >= 1 && data.unitTitle.size() <= 120 &&
+             data.topic is string && data.topic.size() >= 1 && data.topic.size() <= 200 &&
+             data.gradeOrLevel is string && data.gradeOrLevel.size() >= 1 && data.gradeOrLevel.size() <= 60 &&
+             data.lessonNotes is string && data.lessonNotes.size() >= 1 && data.lessonNotes.size() <= 15000 &&
+             data.assessmentQuestions is string && data.assessmentQuestions.size() >= 1 && data.assessmentQuestions.size() <= 15000 &&
+             data.gradingRubric is string && data.gradingRubric.size() >= 1 && data.gradingRubric.size() <= 10000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidTutorBooking(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.tutorId is string && data.tutorId.size() >= 1 && data.tutorId.size() <= 80 &&
+             data.tutorName is string && data.tutorName.size() >= 1 && data.tutorName.size() <= 100 &&
+             data.subjectTitle is string && data.subjectTitle.size() >= 1 && data.subjectTitle.size() <= 120 &&
+             data.scheduledDate is string && data.scheduledDate.size() >= 1 && data.scheduledDate.size() <= 40 &&
+             data.scheduledTime is string && data.scheduledTime.size() >= 1 && data.scheduledTime.size() <= 40 &&
+             data.amountGhs is number && data.amountGhs >= 0 && data.amountGhs <= 50000 &&
+             data.paymentMethod in ['MTN MoMo', 'Telecel Cash', 'Paystack Card'] &&
+             data.paymentStatus in ['CONFIRMED', 'PENDING', 'COMPLETED'] &&
+             data.meetingMode is string && data.meetingMode.size() >= 1 && data.meetingMode.size() <= 40 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidLearningResource(data) {
+      return data.authorId is string && data.authorId == request.auth.uid &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 100 &&
+             data.unitId is string && data.unitId.size() >= 1 && data.unitId.size() <= 80 &&
+             data.unitCode is string && data.unitCode.size() >= 1 && data.unitCode.size() <= 30 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 150 &&
+             data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 1000 &&
+             data.resourceType in ['TEXTBOOK', 'LECTURE_NOTE', 'VIDEO', 'PAST_QUESTION', 'LESSON_PLAN'] &&
+             data.isTeacherVerified is bool &&
+             data.isPublished is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidLiveClass(data) {
+      return data.authorId is string && data.authorId == request.auth.uid &&
+             data.hostName is string && data.hostName.size() >= 1 && data.hostName.size() <= 100 &&
+             data.unitId is string && data.unitId.size() >= 1 && data.unitId.size() <= 80 &&
+             data.unitCode is string && data.unitCode.size() >= 1 && data.unitCode.size() <= 30 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 150 &&
+             data.scheduledAtLabel is string && data.scheduledAtLabel.size() >= 1 && data.scheduledAtLabel.size() <= 80 &&
+             data.meetingLink is string && data.meetingLink.size() >= 1 && data.meetingLink.size() <= 300 &&
+             data.status in ['UPCOMING', 'LIVE', 'ENDED'] &&
+             data.isPublished is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidForumPost(data) {
+      return data.authorId is string && data.authorId == request.auth.uid &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 100 &&
+             data.authorRole is string && data.authorRole.size() >= 1 && data.authorRole.size() <= 30 &&
+             data.unitId is string && data.unitId.size() >= 1 && data.unitId.size() <= 80 &&
+             data.unitCode is string && data.unitCode.size() >= 1 && data.unitCode.size() <= 30 &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 2000 &&
+             data.isPublished is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    // 1. Private User Profile (PII isolated strictly to owner)
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll(['userId', 'fullName', 'role', 'onboardingCompleted', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'fullName', 'email', 'role', 'educationLevel',
+                         'institutionId', 'institutionName', 'formOrLevel', 'learningAreaOrProgramme',
+                         'semester', 'academicYear', 'enrolledUnitIds', 'teachingSpecialty',
+                         'staffVerificationId', 'tutorBio', 'tutorCredentials', 'tutorHourlyRateGhs',
+                         'tutorMode', 'onboardingCompleted', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidUserProfile(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'fullName', 'email', 'role', 'educationLevel',
+                         'institutionId', 'institutionName', 'formOrLevel', 'learningAreaOrProgramme',
+                         'semester', 'academicYear', 'enrolledUnitIds', 'teachingSpecialty',
+                         'staffVerificationId', 'tutorBio', 'tutorCredentials', 'tutorHourlyRateGhs',
+                         'tutorMode', 'onboardingCompleted', 'updatedAt'
+                       ]);
+
+      allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+
+      match /quiz_attempts/{attemptId} {
+        allow get: if isSignedIn() && isValidId(attemptId) && request.auth.uid == userId;
+        allow list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() &&
+                         isValidId(attemptId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll(['userId', 'unitId', 'unitTitle', 'assessmentTitle', 'score', 'correctCount', 'totalQuestions', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'unitId', 'unitTitle', 'assessmentTitle', 'score', 'correctCount', 'totalQuestions', 'createdAt']) &&
+                         isValidQuizAttempt(incoming());
+        allow update, delete: if false;
+      }
+
+      match /lesson_plans/{planId} {
+        allow get: if isSignedIn() && isValidId(planId) && request.auth.uid == userId;
+        allow list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() &&
+                         isValidId(planId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll(['userId', 'unitId', 'unitTitle', 'topic', 'gradeOrLevel', 'lessonNotes', 'assessmentQuestions', 'gradingRubric', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'unitId', 'unitTitle', 'topic', 'gradeOrLevel', 'lessonNotes', 'assessmentQuestions', 'gradingRubric', 'createdAt']) &&
+                         isValidLessonPlan(incoming());
+        allow update: if false;
+        allow delete: if isSignedIn() && isValidId(planId) && request.auth.uid == userId;
+      }
+
+      match /tutor_bookings/{bookingId} {
+        allow get: if isSignedIn() && isValidId(bookingId) && request.auth.uid == userId;
+        allow list: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() &&
+                         isValidId(bookingId) &&
+                         request.auth.uid == userId &&
+                         incoming().keys().hasAll(['userId', 'tutorId', 'tutorName', 'subjectTitle', 'scheduledDate', 'scheduledTime', 'amountGhs', 'paymentMethod', 'paymentStatus', 'meetingMode', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'tutorId', 'tutorName', 'subjectTitle', 'scheduledDate', 'scheduledTime', 'amountGhs', 'paymentMethod', 'paymentStatus', 'meetingMode', 'createdAt']) &&
+                         isValidTutorBooking(incoming());
+        allow update: if isSignedIn() &&
+                         isValidId(bookingId) &&
+                         request.auth.uid == userId &&
+                         isValidTutorBooking(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         existing().paymentStatus != 'COMPLETED' &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['paymentStatus']);
+        allow delete: if isSignedIn() && isValidId(bookingId) && request.auth.uid == userId;
+      }
+    }
+
+    // 2. Shared Published Learning Resources (query must filter isPublished == true)
+    match /resources/{resourceId} {
+      allow get: if isSignedIn() && isValidId(resourceId) && existing().isPublished == true;
+      allow list: if isSignedIn() && existing().isPublished == true;
+      allow create: if isSignedIn() &&
+                       isValidId(resourceId) &&
+                       incoming().keys().hasAll(['authorId', 'authorName', 'unitId', 'unitCode', 'title', 'summary', 'resourceType', 'isTeacherVerified', 'isPublished', 'createdAt']) &&
+                       incoming().keys().hasOnly(['authorId', 'authorName', 'unitId', 'unitCode', 'title', 'summary', 'resourceType', 'isTeacherVerified', 'isPublished', 'createdAt']) &&
+                       isValidLearningResource(incoming());
+      allow update: if isSignedIn() &&
+                       isValidId(resourceId) &&
+                       existing().authorId == request.auth.uid &&
+                       isValidLearningResource(incoming()) &&
+                       incoming().authorId == existing().authorId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['title', 'summary', 'isPublished']);
+      allow delete: if isSignedIn() && isValidId(resourceId) && existing().authorId == request.auth.uid;
+    }
+
+    // 3. Shared Published Live Classes (query must filter isPublished == true)
+    match /live_classes/{classId} {
+      allow get: if isSignedIn() && isValidId(classId) && existing().isPublished == true;
+      allow list: if isSignedIn() && existing().isPublished == true;
+      allow create: if isSignedIn() &&
+                       isValidId(classId) &&
+                       incoming().keys().hasAll(['authorId', 'hostName', 'unitId', 'unitCode', 'title', 'scheduledAtLabel', 'meetingLink', 'status', 'isPublished', 'createdAt']) &&
+                       incoming().keys().hasOnly(['authorId', 'hostName', 'unitId', 'unitCode', 'title', 'scheduledAtLabel', 'meetingLink', 'status', 'isPublished', 'createdAt']) &&
+                       isValidLiveClass(incoming());
+      allow update: if isSignedIn() &&
+                       isValidId(classId) &&
+                       existing().authorId == request.auth.uid &&
+                       existing().status != 'ENDED' &&
+                       isValidLiveClass(incoming()) &&
+                       incoming().authorId == existing().authorId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['status', 'scheduledAtLabel', 'meetingLink']);
+      allow delete: if isSignedIn() && isValidId(classId) && existing().authorId == request.auth.uid;
+    }
+
+    // 4. Shared Study Community Forum Posts (query must filter isPublished == true)
+    match /forum_posts/{postId} {
+      allow get: if isSignedIn() && isValidId(postId) && existing().isPublished == true;
+      allow list: if isSignedIn() && existing().isPublished == true;
+      allow create: if isSignedIn() &&
+                       isValidId(postId) &&
+                       incoming().keys().hasAll(['authorId', 'authorName', 'authorRole', 'unitId', 'unitCode', 'content', 'isPublished', 'createdAt']) &&
+                       incoming().keys().hasOnly(['authorId', 'authorName', 'authorRole', 'unitId', 'unitCode', 'content', 'isPublished', 'createdAt']) &&
+                       isValidForumPost(incoming());
+      allow update: if false;
+      allow delete: if isSignedIn() && isValidId(postId) && existing().authorId == request.auth.uid;
+    }
+  }
+}

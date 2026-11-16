@@ -1,0 +1,6 @@
+{
+  "name": "Adesua",
+  "description": "Ghanaian educational platform for SHS & University students, teachers, and private tutors with AI tutoring, NaCCA curricula, assessments, and tutor marketplace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
